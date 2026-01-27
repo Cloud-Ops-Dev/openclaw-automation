@@ -6,18 +6,21 @@ Administrative assistant automation for [Clawdbot](https://github.com/badlogic/c
 
 This project extends Clawdbot (Jarvis) to automate interactions across multiple platforms:
 
-- **Email** - Fastmail integration for reading, processing, and responding to emails
+- **Email & Calendar** - Fastmail JMAP integration for email management and calendar automation
 - **Phone/SMS** - Twilio integration for voicemails and text messages
 - **CRM** - Website CRM integration for customer management
 - **Local Apps** - Desktop application automation
 
 ## Integrations
 
-### Email Integration (In Progress)
-- Fastmail API integration
-- Incoming email processing
-- AI-assisted email responses
-- Email-to-chat bridging
+### Email & Calendar Integration (In Progress)
+- Fastmail JMAP API integration
+- Incoming email classification (customer vs other)
+- Customer email notifications
+- AI-drafted replies with human review
+- Automatic calendar entries from scheduling emails
+- Appointment notifications and daily briefings
+- Natural language calendar management
 
 ### Phone Integration (Planned)
 - Twilio voicemail processing

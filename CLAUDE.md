@@ -16,7 +16,7 @@ An administrative assistant powered by Jarvis (Clawdbot) for personal use and fo
 
 | Integration | Platform | Description |
 |-------------|----------|-------------|
-| **Email** | Fastmail | Read, respond to, and manage emails |
+| **Email & Calendar** | Fastmail (JMAP) | Email management + calendar automation |
 | **Phone/SMS** | Twilio | Voicemails and SMS (stored on website) |
 | **CRM** | Website CRM | Customer relationship management |
 | **Local Apps** | Various | Desktop application automation |
@@ -25,15 +25,21 @@ An administrative assistant powered by Jarvis (Clawdbot) for personal use and fo
 
 ```
 automation/
-├── email_integration/    # Fastmail email integration
+├── email_calendar/       # Fastmail email & calendar integration
 ├── research/             # Research notes (git-ignored)
 └── .planning/            # Planning files (git-ignored)
 ```
 
 ## Subprojects
 
-### email_integration/
-Fastmail integration - read, process, and respond to emails through Jarvis.
+### email_calendar/
+Fastmail integration for email and calendar:
+- Classify incoming emails (customer vs other)
+- Notify of customer emails
+- Draft replies for review and send
+- Process scheduling emails → calendar entries
+- Appointment notifications and daily briefings
+- Natural language calendar management
 
 ### (Planned) phone_integration/
 Twilio integration - handle voicemails and SMS from company phone.
@@ -43,7 +49,7 @@ Website CRM integration - manage customer interactions.
 
 ## Status
 
-**Current Phase:** Research & Planning (Email Integration)
+**Current Phase:** Research & Planning (Email & Calendar Integration)
 
 ## Architecture Notes
 
