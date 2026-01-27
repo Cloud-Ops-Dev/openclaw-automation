@@ -60,16 +60,16 @@ Note: Two different APIs required until JMAP calendar spec is finalized.
 
 ### Customer Identification
 
-Emails are classified as "customer" based on:
+```
+Email to sales@novique.ai    → ALWAYS customer (no analysis needed)
+Email to support@novique.ai  → ALWAYS customer (no analysis needed)
+Email to other @novique.ai   → Content analysis required
+```
 
-1. **Recipient Address**
-   - `sales@novique.ai` → customer/prospect
-   - `support@novique.ai` → customer/prospect
-
-2. **Content Analysis (AI)**
-   - Customer or prospective customer inquiry
-   - vs. service provider / vendor / SaaS tool notifications
-   - Jarvis analyzes email content to make this determination
+**Content Analysis (for other @novique.ai addresses):**
+- Jarvis analyzes email content to classify as:
+  - Customer or prospective customer inquiry → treat as customer
+  - Service provider / vendor / SaaS notification → non-customer
 
 Non-customer examples:
 - SaaS notifications (billing, alerts, newsletters)
