@@ -1,0 +1,17 @@
+# Planning files (local only)
+.planning/
+
+# Research files (local only)
+research/
+
+# Environment and secrets
+.env
+.env.*
+*.local
+
+# Node
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
