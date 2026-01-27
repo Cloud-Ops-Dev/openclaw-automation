@@ -9,7 +9,18 @@ Fastmail integration for email and calendar automation through Jarvis. Handles b
 
 ## Status
 
-**Current Phase:** Research & Planning
+**Current Phase:** Design Complete → Ready for Implementation
+
+## Approach
+
+**Fork and extend [fastmail-mcp-server](https://github.com/alexdiazdecerio/fastmail-mcp-server)**
+
+The existing MCP server provides solid email functionality. We will:
+1. Add recipient (`to`) filtering for customer detection
+2. Add draft management (create/list/send drafts)
+3. Add CalDAV calendar integration via `tsdav`
+4. Add customer classification logic
+5. Integrate with Clawdbot notifications
 
 ## Requirements
 
@@ -78,17 +89,44 @@ Non-customer examples:
 
 ## Goals
 
-- [ ] Research Fastmail JMAP API
-- [ ] Research existing clawdbot email integrations
-- [ ] Define customer identification logic
-- [ ] Design architecture
-- [ ] Implement email tools/skills
-- [ ] Implement calendar tools/skills
+- [x] Research Fastmail JMAP API
+- [x] Research existing clawdbot email integrations
+- [x] Define customer identification logic
+- [x] Design architecture
+- [ ] Fork fastmail-mcp-server
+- [ ] Add recipient filtering
+- [ ] Add draft management tools
+- [ ] Add CalDAV calendar integration
+- [ ] Add calendar tools
+- [ ] Add customer classification
+- [ ] Integrate with Clawdbot
+
+## Implementation Phases
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Email enhancements (recipient filter, drafts) | Planned |
+| 2 | Calendar integration (CalDAV/tsdav) | Planned |
+| 3 | Email-calendar integration | Planned |
+| 4 | Clawdbot integration | Planned |
+
+## Key Resources
+
+- **Base repo:** `research/fastmail-mcp-server/` (cloned)
+- **Design doc:** `.planning/plans/email_calendar_design.md`
+- **Research:** `research/email_calendar_research.md`
 
 ## Related Files
 
 - Clawdbot config: `~/.clawdbot/clawdbot.json`
 - Main clawdbot source: `~/.npm-global/lib/node_modules/clawdbot/`
+
+## Authentication Required
+
+| Service | Auth Type | Config Key |
+|---------|-----------|------------|
+| JMAP (Email) | API Token | `FASTMAIL_API_TOKEN` |
+| CalDAV (Calendar) | App Password | `FASTMAIL_APP_PASSWORD` |
 
 ---
 
