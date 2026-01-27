@@ -20,7 +20,9 @@ Fastmail integration for Clawdbot, enabling AI-assisted email and calendar manag
 
 ## Provider
 
-**Fastmail** using JMAP API (handles both email and calendar)
+**Fastmail** using:
+- JMAP API for email
+- CalDAV for calendar (JMAP calendar spec still in draft)
 
 ## Status
 

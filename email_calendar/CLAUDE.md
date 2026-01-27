@@ -48,10 +48,15 @@ Fastmail integration for email and calendar automation through Jarvis. Handles b
 
 ## Technical Notes
 
-### Fastmail API
-- Uses JMAP protocol (modern replacement for IMAP)
-- Single API for both email and calendar
-- Documentation: https://www.fastmail.com/dev/
+### Fastmail APIs
+- **Email:** JMAP protocol (modern replacement for IMAP)
+  - Endpoint: `https://api.fastmail.com/jmap/session`
+  - Documentation: https://www.fastmail.com/dev/
+- **Calendar:** CalDAV protocol (JMAP calendars not yet available)
+  - Endpoint: `https://caldav.fastmail.com/dav/principals/user/{email}/`
+  - JMAP for Calendars spec still in draft (expires May 2026)
+
+Note: Two different APIs required until JMAP calendar spec is finalized.
 
 ### Customer Identification
 - Need to define how to identify "customer" emails
