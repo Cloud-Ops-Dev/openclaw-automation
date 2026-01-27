@@ -59,10 +59,22 @@ Fastmail integration for email and calendar automation through Jarvis. Handles b
 Note: Two different APIs required until JMAP calendar spec is finalized.
 
 ### Customer Identification
-- Need to define how to identify "customer" emails
-  - Domain matching?
-  - CRM integration?
-  - Contact list?
+
+Emails are classified as "customer" based on:
+
+1. **Recipient Address**
+   - `sales@novique.ai` → customer/prospect
+   - `support@novique.ai` → customer/prospect
+
+2. **Content Analysis (AI)**
+   - Customer or prospective customer inquiry
+   - vs. service provider / vendor / SaaS tool notifications
+   - Jarvis analyzes email content to make this determination
+
+Non-customer examples:
+- SaaS notifications (billing, alerts, newsletters)
+- Vendor communications
+- Infrastructure/service emails
 
 ## Goals
 
