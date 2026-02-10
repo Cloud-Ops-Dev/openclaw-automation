@@ -94,7 +94,7 @@ Project management integration with Vikunja (self-hosted, running via podman com
 
 All Cloud-Ops-Dev repos relevant to the automation ecosystem:
 
-- https://github.com/Cloud-Ops-Dev/Clawdbot_Automation (this repo)
+- https://github.com/Cloud-Ops-Dev/openclaw-automation (this repo)
 - https://github.com/Cloud-Ops-Dev/fastmail-mcp-server (public, npm: @novique/fastmail-mcp-server)
 - https://github.com/Cloud-Ops-Dev/desktop_app (GTK3 dashboard)
 - https://github.com/Cloud-Ops-Dev/knowledge_trilium (TriliumNext ETAPI)
@@ -104,23 +104,16 @@ All Cloud-Ops-Dev repos relevant to the automation ecosystem:
 
 ---
 
-## 5. Recommendation: Rename GitHub Repo
+## 5. GitHub Repo Rename (DONE)
 
-**Current name:** `Clawdbot_Automation`
-**Proposed name:** `openclaw-automation`
+**Renamed:** `Clawdbot_Automation` → `openclaw-automation` (February 10, 2026)
 
-Reasons:
-- Upstream rebranded from Clawdbot to OpenClaw months ago
-- All other repos and config already use "openclaw" naming
-- GitHub handles redirects from old URL automatically after rename
-- The clone URL in README, CLAUDE.md, and any CI configs will need updating after rename
-
-Steps:
-1. Rename on GitHub: Settings -> General -> Repository name -> `openclaw-automation`
-2. Update local remote: `git remote set-url origin https://github.com/Cloud-Ops-Dev/openclaw-automation.git`
-3. Update README.md clone URL
-4. Update CLAUDE.md repository URL
-5. Update any CI/CD or webhook references
+Completed steps:
+1. Renamed on GitHub via `gh repo rename`
+2. Updated local remote to `https://github.com/Cloud-Ops-Dev/openclaw-automation.git`
+3. Updated README.md clone URL
+4. Updated CLAUDE.md repository URL
+5. GitHub auto-redirects old URL
 
 ---
 
