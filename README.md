@@ -1,10 +1,10 @@
-# Clawdbot Automation
+# OpenClaw Automation
 
-Administrative assistant automation for [Clawdbot](https://github.com/badlogic/clawdbot) - creating an AI-powered assistant for personal and business use.
+Administrative assistant automation for [OpenClaw](https://github.com/badlogic/openclaw) - creating an AI-powered assistant for personal and business use.
 
 ## Overview
 
-This project extends Clawdbot (Jarvis) to automate interactions across multiple platforms:
+This project extends OpenClaw (Jarvis) to automate interactions across multiple platforms:
 
 - **Email & Calendar** - Fastmail JMAP integration for email management and calendar automation
 - **Phone/SMS** - Twilio integration for voicemails and text messages
@@ -36,14 +36,14 @@ This project extends Clawdbot (Jarvis) to automate interactions across multiple 
 
 ```bash
 # Clone the repository
-git clone https://github.com/Cloud-Ops-Dev/Clawdbot_Automation.git
+git clone https://github.com/Cloud-Ops-Dev/openclaw-automation.git
 
 # Follow setup instructions for each integration
 ```
 
 ## Requirements
 
-- Clawdbot installed and configured
+- OpenClaw installed and configured
 - Node.js 22+
 - Fastmail account (for email integration)
 - Twilio account (for phone integration)
