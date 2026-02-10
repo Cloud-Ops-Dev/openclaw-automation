@@ -1,0 +1,443 @@
+#!/usr/bin/env node
+
+/**
+ * Fastmail CLI - Direct command-line interface for email and calendar
+ * For use with OpenClaw/Jarvis
+ */
+
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment
+dotenv.config({ path: join(__dirname, '..', '.env') });
+
+// Dynamic imports for the clients
+const { FastmailClient } = await import('../build/fastmail-client.js');
+const { FastmailCalendarClient } = await import('../build/caldav-client.js');
+
+const email = process.env.FASTMAIL_EMAIL;
+const apiToken = process.env.FASTMAIL_API_TOKEN;
+const appPassword = process.env.FASTMAIL_APP_PASSWORD;
+
+if (!email || !apiToken) {
+  console.error('Error: FASTMAIL_EMAIL and FASTMAIL_API_TOKEN must be set');
+  process.exit(1);
+}
+
+const fastmail = new FastmailClient(email, apiToken);
+const calendar = appPassword ? new FastmailCalendarClient(email, appPassword) : null;
+
+const args = process.argv.slice(2);
+const command = args[0];
+
+async function main() {
+  try {
+    // Initialize clients as needed
+    await fastmail.initialize();
+
+    switch (command) {
+      case 'help':
+      case '--help':
+      case '-h':
+      case undefined:
+        console.log(`
+Fastmail CLI - Email & Calendar Operations for OpenClaw
+
+USAGE:
+  fastmail-cli <command> [options]
+
+EMAIL COMMANDS:
+  mailboxes                     List all mailboxes/folders
+  emails [--to <addr>] [--from <addr>] [--mailbox <name>] [--unread] [--limit <n>]
+                                List emails with optional filters
+  email <id>                    Get full email details by ID
+  delete-email <id>             Delete an email permanently
+  drafts                        List all draft emails
+  create-draft --to <email> --subject <subj> --body <text>
+                                Create a draft for review
+  send-draft <id>               Send an existing draft
+  delete-draft <id>             Delete a draft
+
+CALENDAR COMMANDS:
+  calendars                     List all calendars
+  today                         Show today's schedule
+  upcoming [--days <n>]         Show upcoming events (default: 7 days)
+  create-event --title <title> --start <datetime> --end <datetime> [--location <loc>]
+                                Create a calendar event
+  delete-event <event-url>      Delete a calendar event
+
+ANALYSIS COMMANDS:
+  detect-scheduling <email-id>  Analyze email for scheduling content
+  customer-emails               List emails to sales@ and support@novique.ai
+
+EXAMPLES:
+  fastmail-cli emails --unread --limit 5
+  fastmail-cli emails --to sales@novique.ai
+  fastmail-cli today
+  fastmail-cli create-event --title "Call with Client" --start "2026-01-28T10:00" --end "2026-01-28T11:00"
+  fastmail-cli detect-scheduling Str5LjN2-JkZ
+`);
+        break;
+
+      case 'mailboxes': {
+        const mailboxes = await fastmail.getMailboxes();
+        console.log(JSON.stringify(mailboxes.map(m => ({
+          id: m.id,
+          name: m.name,
+          role: m.role,
+          unread: m.unreadEmails,
+          total: m.totalEmails
+        })), null, 2));
+        break;
+      }
+
+      case 'emails': {
+        const filter = {};
+        const options = { limit: 20 };
+        let mailboxName = null;
+
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === '--to' && args[i+1]) {
+            filter.to = args[++i];
+          } else if (args[i] === '--from' && args[i+1]) {
+            filter.from = args[++i];
+          } else if (args[i] === '--mailbox' && args[i+1]) {
+            mailboxName = args[++i];
+          } else if (args[i] === '--unread') {
+            filter.isUnread = true;
+          } else if (args[i] === '--limit' && args[i+1]) {
+            options.limit = parseInt(args[++i]);
+          }
+        }
+
+        // If mailbox name specified, look up the ID
+        if (mailboxName) {
+          const mailboxes = await fastmail.getMailboxes();
+          const mailbox = mailboxes.find(m =>
+            m.name.toLowerCase() === mailboxName.toLowerCase()
+          );
+          if (!mailbox) {
+            console.error(`Mailbox not found: ${mailboxName}`);
+            console.error('Available mailboxes:', mailboxes.map(m => m.name).join(', '));
+            process.exit(1);
+          }
+          options.mailboxId = mailbox.id;
+        }
+
+        if (Object.keys(filter).length > 0) {
+          options.filter = filter;
+        }
+
+        const { emails, total } = await fastmail.getEmails(options);
+        console.log(JSON.stringify({
+          total,
+          count: emails.length,
+          emails: emails.map(e => ({
+            id: e.id,
+            subject: e.subject,
+            from: e.from?.[0],
+            to: e.to,
+            date: e.receivedAt,
+            preview: e.preview?.substring(0, 100),
+            unread: !e.keywords?.['$seen']
+          }))
+        }, null, 2));
+        break;
+      }
+
+      case 'email': {
+        const emailId = args[1];
+        if (!emailId) {
+          console.error('Usage: fastmail-cli email <id>');
+          process.exit(1);
+        }
+        const emailData = await fastmail.getEmail(emailId);
+        if (!emailData) {
+          console.error('Email not found');
+          process.exit(1);
+        }
+
+        let body = '';
+        if (emailData.textBody?.[0] && emailData.bodyValues) {
+          body = emailData.bodyValues[emailData.textBody[0].partId]?.value || '';
+        }
+
+        console.log(JSON.stringify({
+          id: emailData.id,
+          subject: emailData.subject,
+          from: emailData.from,
+          to: emailData.to,
+          cc: emailData.cc,
+          date: emailData.receivedAt,
+          body: body,
+          hasAttachment: emailData.hasAttachment
+        }, null, 2));
+        break;
+      }
+
+      case 'drafts': {
+        const { drafts, total } = await fastmail.listDrafts();
+        console.log(JSON.stringify({
+          total,
+          drafts: drafts.map(d => ({
+            id: d.id,
+            subject: d.subject,
+            to: d.to,
+            preview: d.preview
+          }))
+        }, null, 2));
+        break;
+      }
+
+      case 'create-draft': {
+        const draftOpts = { to: [] };
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === '--to' && args[i+1]) {
+            draftOpts.to.push({ email: args[++i] });
+          } else if (args[i] === '--subject' && args[i+1]) {
+            draftOpts.subject = args[++i];
+          } else if (args[i] === '--body' && args[i+1]) {
+            draftOpts.textBody = args[++i];
+          }
+        }
+
+        if (!draftOpts.to.length || !draftOpts.subject) {
+          console.error('Usage: fastmail-cli create-draft --to <email> --subject <subj> --body <text>');
+          process.exit(1);
+        }
+
+        const result = await fastmail.createDraft(draftOpts);
+        console.log(JSON.stringify({ success: true, draftId: result.draftId }, null, 2));
+        break;
+      }
+
+      case 'send-draft': {
+        const draftId = args[1];
+        if (!draftId) {
+          console.error('Usage: fastmail-cli send-draft <id>');
+          process.exit(1);
+        }
+        const result = await fastmail.sendDraft(draftId);
+        console.log(JSON.stringify({ success: true, sentAt: result.sentAt }, null, 2));
+        break;
+      }
+
+      case 'delete-draft': {
+        const draftId = args[1];
+        if (!draftId) {
+          console.error('Usage: fastmail-cli delete-draft <id>');
+          process.exit(1);
+        }
+        await fastmail.deleteDraft(draftId);
+        console.log(JSON.stringify({ success: true }, null, 2));
+        break;
+      }
+
+      case 'delete-email': {
+        const emailId = args[1];
+        if (!emailId) {
+          console.error('Usage: fastmail-cli delete-email <id>');
+          process.exit(1);
+        }
+        await fastmail.deleteEmail(emailId);
+        console.log(JSON.stringify({ success: true, deleted: emailId }, null, 2));
+        break;
+      }
+
+      case 'calendars': {
+        if (!calendar) {
+          console.error('Calendar not configured (FASTMAIL_APP_PASSWORD not set)');
+          process.exit(1);
+        }
+        await calendar.initialize();
+        const cals = await calendar.listCalendars();
+        console.log(JSON.stringify(cals, null, 2));
+        break;
+      }
+
+      case 'today': {
+        if (!calendar) {
+          console.error('Calendar not configured');
+          process.exit(1);
+        }
+        await calendar.initialize();
+        const events = await calendar.getTodaysEvents();
+        console.log(JSON.stringify({
+          date: new Date().toISOString().split('T')[0],
+          count: events.length,
+          events: events.map(e => ({
+            summary: e.summary,
+            start: e.start,
+            end: e.end,
+            location: e.location,
+            url: e.url
+          }))
+        }, null, 2));
+        break;
+      }
+
+      case 'upcoming': {
+        if (!calendar) {
+          console.error('Calendar not configured');
+          process.exit(1);
+        }
+        await calendar.initialize();
+
+        let days = 7;
+        if (args[1] === '--days' && args[2]) {
+          days = parseInt(args[2]);
+        }
+
+        const events = await calendar.getUpcomingEvents(days);
+        console.log(JSON.stringify({
+          days,
+          count: events.length,
+          events: events.map(e => ({
+            summary: e.summary,
+            start: e.start,
+            end: e.end,
+            location: e.location,
+            url: e.url
+          }))
+        }, null, 2));
+        break;
+      }
+
+      case 'create-event': {
+        if (!calendar) {
+          console.error('Calendar not configured');
+          process.exit(1);
+        }
+        await calendar.initialize();
+
+        const eventOpts = {};
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === '--title' && args[i+1]) {
+            eventOpts.summary = args[++i];
+          } else if (args[i] === '--start' && args[i+1]) {
+            eventOpts.start = new Date(args[++i]);
+          } else if (args[i] === '--end' && args[i+1]) {
+            eventOpts.end = new Date(args[++i]);
+          } else if (args[i] === '--location' && args[i+1]) {
+            eventOpts.location = args[++i];
+          } else if (args[i] === '--description' && args[i+1]) {
+            eventOpts.description = args[++i];
+          }
+        }
+
+        if (!eventOpts.summary || !eventOpts.start || !eventOpts.end) {
+          console.error('Usage: fastmail-cli create-event --title <title> --start <datetime> --end <datetime>');
+          process.exit(1);
+        }
+
+        // Get first calendar
+        const cals = await calendar.listCalendars();
+        eventOpts.calendarId = cals[0].url;
+
+        const result = await calendar.createEvent(eventOpts);
+        console.log(JSON.stringify({ success: true, eventUrl: result.eventUrl, uid: result.uid }, null, 2));
+        break;
+      }
+
+      case 'delete-event': {
+        if (!calendar) {
+          console.error('Calendar not configured');
+          process.exit(1);
+        }
+        await calendar.initialize();
+
+        const eventUrl = args[1];
+        if (!eventUrl) {
+          console.error('Usage: fastmail-cli delete-event <event-url>');
+          process.exit(1);
+        }
+
+        // Extract calendar ID from event URL
+        const calendarId = eventUrl.split('/').slice(0, -1).join('/') + '/';
+        await calendar.deleteEvent(calendarId, eventUrl);
+        console.log(JSON.stringify({ success: true }, null, 2));
+        break;
+      }
+
+      case 'detect-scheduling': {
+        const emailId = args[1];
+        if (!emailId) {
+          console.error('Usage: fastmail-cli detect-scheduling <email-id>');
+          process.exit(1);
+        }
+
+        const emailData = await fastmail.getEmail(emailId);
+        if (!emailData) {
+          console.error('Email not found');
+          process.exit(1);
+        }
+
+        let textContent = '';
+        if (emailData.textBody?.[0] && emailData.bodyValues) {
+          textContent = emailData.bodyValues[emailData.textBody[0].partId]?.value || '';
+        }
+
+        const fullText = `${emailData.subject || ''}\n${textContent}`.toLowerCase();
+
+        const keywords = ['schedule', 'meeting', 'call', 'appointment', 'calendar',
+          'available', 'availability', 'book', 'zoom', 'teams', 'monday', 'tuesday',
+          'wednesday', 'thursday', 'friday', 'am', 'pm', 'tomorrow', 'next week'];
+
+        const found = keywords.filter(kw => fullText.includes(kw));
+        const hasTime = /\d{1,2}:\d{2}|\d{1,2}\s*(am|pm)/i.test(fullText);
+
+        const hasScheduling = found.length >= 2 || (found.length >= 1 && hasTime);
+        const confidence = found.length >= 3 && hasTime ? 'HIGH' : found.length >= 2 ? 'MEDIUM' : 'LOW';
+
+        console.log(JSON.stringify({
+          emailId,
+          subject: emailData.subject,
+          from: emailData.from?.[0],
+          hasSchedulingIntent: hasScheduling,
+          confidence,
+          keywordsFound: found
+        }, null, 2));
+        break;
+      }
+
+      case 'customer-emails': {
+        // Get emails to sales@ and support@
+        const salesEmails = await fastmail.getEmails({ filter: { to: 'sales@novique.ai' }, limit: 20 });
+        const supportEmails = await fastmail.getEmails({ filter: { to: 'support@novique.ai' }, limit: 20 });
+
+        const allCustomer = [...salesEmails.emails, ...supportEmails.emails];
+        // Remove duplicates by ID
+        const unique = [...new Map(allCustomer.map(e => [e.id, e])).values()];
+        // Sort by date
+        unique.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+
+        console.log(JSON.stringify({
+          total: unique.length,
+          emails: unique.map(e => ({
+            id: e.id,
+            subject: e.subject,
+            from: e.from?.[0],
+            to: e.to,
+            date: e.receivedAt,
+            unread: !e.keywords?.['$seen']
+          }))
+        }, null, 2));
+        break;
+      }
+
+      default:
+        console.error(`Unknown command: ${command}`);
+        console.error('Run "fastmail-cli help" for usage');
+        process.exit(1);
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+main();
