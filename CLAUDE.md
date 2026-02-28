@@ -1,6 +1,33 @@
+# OpenClaw Automation — Contract (STRICT)
+
+## Inheritance
+This file inherits the IDE constitution at `~/IDE/CLAUDE.md` (STRICT MODE).
+If any instruction here conflicts with the constitution, the constitution wins.
+
+## Scope
+Automation project under `projects/`.
+
+## Allowed Writes
+- Inside this project directory only
+- `data/` for runtime outputs (logs, caches, generated artifacts) if needed
+No other write locations are permitted without an explicit plan.
+
+## Entry Points
+- Structural/operational gate: `bin/doctor`
+- Service/stack operations must prefer `bin/` wrappers when they exist (e.g., `bin/private-node`, `bin/email-monitor`, `bin/ai-usage`).
+
+## Strict Gate
+After structural changes, run:
+```bash
+cd ~/IDE
+bin/doctor
+```
+
+---
+
 # OpenClaw Automation
 
-**Location:** `/home/clayton/IDE/openclaw/projects/automation/`
+**Location:** `projects/automation/` (authoritative relative path; do not assume `/home/...`)
 **Repository:** https://github.com/Cloud-Ops-Dev/openclaw-automation
 
 ## Vision
@@ -71,7 +98,11 @@ This creates a potential unified API surface for phone communications.
 ## Development
 
 ```bash
-cd /home/clayton/IDE/openclaw/projects/automation
+cd ~/IDE
+set -a
+source config/paths.env
+set +a
+cd "$IDE_ROOT/projects/automation"
 git status
 ```
 
