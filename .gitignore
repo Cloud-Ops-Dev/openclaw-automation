@@ -15,3 +15,10 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+# local secrets/state (never commit)
+CREDENTIALS.md
+email_calendar/.email-monitor-state.json
+
+# build artifacts
+email_calendar/build/
