@@ -22,11 +22,11 @@ Vikunja integration under `projects/automation/vikunja/`.
 # Vikunja Integration
 
 **Location:** `projects/automation/vikunja/` (authoritative relative path; do not assume `/home/...`)  
-**Parent Project:** OpenClaw Automation
+**Parent Project:** Jarvis Automation
 
 ## Overview
 
-Integration between OpenClaw and Vikunja (project management) running on the workstation.
+Integration between Jarvis and Vikunja (project management) running on the workstation.
 
 **Note:** Vikunja handles *project* management. Task management will be a separate integration.
 
@@ -43,7 +43,7 @@ Integration between OpenClaw and Vikunja (project management) running on the wor
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Project sync | Read/write projects from OpenClaw | Planned |
+| Project sync | Read/write projects from Jarvis | Planned |
 | Project status | Display in desktop_app | Planned |
 | Notifications | Alert on milestones/updates | Planned |
 

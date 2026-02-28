@@ -1,4 +1,4 @@
-# OpenClaw Automation — Contract (STRICT)
+# Automation — Contract (STRICT)
 
 ## Inheritance
 This file inherits the IDE constitution at `~/IDE/CLAUDE.md` (STRICT MODE).
@@ -25,14 +25,14 @@ bin/doctor
 
 ---
 
-# OpenClaw Automation
+# Jarvis Automation
 
 **Location:** `projects/automation/` (authoritative relative path; do not assume `/home/...`)
 **Repository:** https://github.com/Cloud-Ops-Dev/openclaw-automation
 
 ## Vision
 
-An administrative assistant powered by Jarvis (OpenClaw) for personal use and for **Novique.ai**. The goal is to automate interactions across multiple platforms and communication channels, creating a unified AI-powered assistant that can:
+An administrative assistant powered by Jarvis for personal use and for **Novique.ai**. The goal is to automate interactions across multiple platforms and communication channels, creating a unified AI-powered assistant that can:
 
 - Manage communications (email, SMS, phone)
 - Interact with CRM and website systems
@@ -72,7 +72,7 @@ Fastmail integration for email and calendar:
 
 ### vikunja/
 Vikunja project management integration:
-- Sync projects with OpenClaw
+- Sync projects with Jarvis
 - Display project status in desktop_app
 - Milestone notifications
 - Runs on laptop (clay-blade) via Podman, accessed over Tailscale

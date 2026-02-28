@@ -2,7 +2,7 @@
 
 /**
  * Fastmail CLI - Direct command-line interface for email and calendar
- * For use with OpenClaw/Jarvis
+ * For use with Jarvis
  */
 
 import { fileURLToPath } from 'url';
@@ -45,7 +45,7 @@ async function main() {
       case '-h':
       case undefined:
         console.log(`
-Fastmail CLI - Email & Calendar Operations for OpenClaw
+Fastmail CLI - Email & Calendar Operations for Jarvis
 
 USAGE:
   fastmail-cli <command> [options]

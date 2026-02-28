@@ -8,6 +8,7 @@ research/
 .env
 .env.*
 *.local
+CREDENTIALS.md
 
 # Node
 node_modules/

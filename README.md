@@ -1,10 +1,10 @@
-# OpenClaw Automation
+# Jarvis Automation
 
-Administrative assistant automation for [OpenClaw](https://github.com/badlogic/openclaw) - creating an AI-powered assistant for personal and business use.
+Administrative assistant automation for Jarvis — creating an AI-powered assistant for personal and business use.
 
 ## Overview
 
-This project extends OpenClaw (Jarvis) to automate interactions across multiple platforms:
+This project automates interactions across multiple platforms:
 
 - **Email & Calendar** - Fastmail JMAP integration for email management and calendar automation
 - **Phone/SMS** - Twilio integration for voicemails and text messages
@@ -43,7 +43,6 @@ git clone https://github.com/Cloud-Ops-Dev/openclaw-automation.git
 
 ## Requirements
 
-- OpenClaw installed and configured
 - Node.js 22+
 - Fastmail account (for email integration)
 - Twilio account (for phone integration)

@@ -1,0 +1,177 @@
+#!/usr/bin/env node
+
+/**
+ * Email Monitor - Checks for new unread emails and sends Telegram notifications
+ * Runs via systemd timer every 15 minutes
+ */
+
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment
+dotenv.config({ path: join(__dirname, '..', '.env') });
+
+// State file to track seen emails
+const STATE_FILE = join(__dirname, '..', '.email-monitor-state.json');
+
+function loadState() {
+  if (existsSync(STATE_FILE)) {
+    try {
+      return JSON.parse(readFileSync(STATE_FILE, 'utf-8'));
+    } catch {
+      return { seenIds: [], lastCheck: null };
+    }
+  }
+  return { seenIds: [], lastCheck: null };
+}
+
+function saveState(state) {
+  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+}
+
+async function sendTelegramMessage(botToken, chatId, message) {
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Telegram API error:', error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('Failed to send Telegram message:', e.message);
+    return false;
+  }
+}
+
+function isCustomerEmail(email) {
+  // Check if email was sent to sales@ or support@novique.ai
+  const customerAddresses = ['sales@novique.ai', 'support@novique.ai'];
+  const toAddresses = email.to || [];
+
+  return toAddresses.some(addr =>
+    customerAddresses.includes(addr.email?.toLowerCase())
+  );
+}
+
+function formatEmailSummary(newEmails) {
+  const customerEmails = newEmails.filter(isCustomerEmail);
+  const otherEmails = newEmails.filter(e => !isCustomerEmail(e));
+
+  let message = `📬 *New Email Alert*\n\n`;
+
+  if (customerEmails.length > 0) {
+    message += `🔴 *${customerEmails.length} CUSTOMER EMAIL${customerEmails.length > 1 ? 'S' : ''}:*\n`;
+    for (const email of customerEmails.slice(0, 5)) {
+      const from = email.from?.name || email.from?.email || 'Unknown';
+      const subject = email.subject || '(no subject)';
+      message += `• *${from}*: ${subject}\n`;
+    }
+    if (customerEmails.length > 5) {
+      message += `  _...and ${customerEmails.length - 5} more_\n`;
+    }
+    message += '\n';
+  }
+
+  if (otherEmails.length > 0) {
+    message += `📩 *${otherEmails.length} other email${otherEmails.length > 1 ? 's' : ''}:*\n`;
+    for (const email of otherEmails.slice(0, 3)) {
+      const from = email.from?.name || email.from?.email || 'Unknown';
+      const subject = email.subject || '(no subject)';
+      message += `• ${from}: ${subject}\n`;
+    }
+    if (otherEmails.length > 3) {
+      message += `  _...and ${otherEmails.length - 3} more_\n`;
+    }
+  }
+
+  return message;
+}
+
+async function main() {
+  console.log(`[${new Date().toISOString()}] Email monitor starting...`);
+
+  // Telegram config from environment
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!botToken || !chatId) {
+    console.error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set');
+    process.exit(1);
+  }
+
+  // Load state
+  const state = loadState();
+  const seenIds = new Set(state.seenIds);
+
+  // Initialize Fastmail client
+  const { FastmailClient } = await import('../build/fastmail-client.js');
+
+  const email = process.env.FASTMAIL_EMAIL;
+  const apiToken = process.env.FASTMAIL_API_TOKEN;
+
+  if (!email || !apiToken) {
+    console.error('FASTMAIL_EMAIL and FASTMAIL_API_TOKEN must be set');
+    process.exit(1);
+  }
+
+  const fastmail = new FastmailClient(email, apiToken);
+  await fastmail.initialize();
+
+  // Get unread emails
+  const { emails } = await fastmail.getEmails({
+    filter: { isUnread: true },
+    limit: 50
+  });
+
+  console.log(`Found ${emails.length} unread emails`);
+
+  // Find new emails (not seen before)
+  const newEmails = emails.filter(e => !seenIds.has(e.id));
+
+  console.log(`${newEmails.length} are new since last check`);
+
+  if (newEmails.length > 0) {
+    // Send notification
+    const message = formatEmailSummary(newEmails);
+    const sent = await sendTelegramMessage(botToken, chatId, message);
+
+    if (sent) {
+      console.log('Telegram notification sent');
+    }
+  }
+
+  // Update state with all current unread email IDs
+  // Keep last 500 IDs to prevent unbounded growth
+  const allIds = [...seenIds, ...emails.map(e => e.id)];
+  const uniqueIds = [...new Set(allIds)].slice(-500);
+
+  saveState({
+    seenIds: uniqueIds,
+    lastCheck: new Date().toISOString(),
+    lastUnreadCount: emails.length
+  });
+
+  console.log(`[${new Date().toISOString()}] Email monitor complete`);
+}
+
+main().catch(e => {
+  console.error('Email monitor error:', e);
+  process.exit(1);
+});

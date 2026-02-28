@@ -5,7 +5,7 @@ This file inherits the IDE constitution at `~/IDE/CLAUDE.md` (STRICT MODE).
 If any instruction here conflicts with the constitution, the constitution wins.
 
 ## Scope
-Email + calendar automation integration for OpenClaw, under `projects/automation/email_calendar/`.
+Email + calendar automation under `projects/automation/email_calendar/`.
 
 ## Allowed Writes
 - Inside this project directory only
@@ -21,7 +21,7 @@ Email + calendar automation integration for OpenClaw, under `projects/automation
 
 ---
 
-# Email & Calendar Integration for OpenClaw
+# Email & Calendar Integration
 
 **Location:** `projects/automation/email_calendar/` (authoritative relative path; do not assume `/home/...`)  
 **Provider:** Fastmail (JMAP API + CalDAV)  
@@ -73,7 +73,7 @@ Fastmail integration for email and calendar automation through Jarvis. Handles b
 - [x] Tested all tools (working)
 
 ### Phase 4 Progress (January 27, 2026)
-- [x] Created `fastmail-cli` command-line tool for OpenClaw
+- [x] Created `fastmail-cli` command-line tool
 - [x] CLI provides direct access to all email/calendar functions
 - [x] Added documentation to `projects/jarvis/TOOLS.md` (or migrate doc reference to a canonical path within IDE)
 - [x] Globally linked via npm (`fastmail-cli` available system-wide)
@@ -88,7 +88,7 @@ The existing MCP server provides solid email functionality. We are adding:
 2. Draft management (create/list/send drafts)
 3. CalDAV calendar integration via `tsdav`
 4. Customer classification logic
-5. OpenClaw notifications integration
+5. Telegram notifications integration
 
 ## Requirements
 

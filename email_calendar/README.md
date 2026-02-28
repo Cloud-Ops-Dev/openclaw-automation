@@ -1,6 +1,6 @@
 # Email & Calendar Integration
 
-Fastmail integration for Clawdbot, enabling AI-assisted email and calendar management.
+Fastmail integration for Jarvis, enabling AI-assisted email and calendar management.
 
 ## Features
 
