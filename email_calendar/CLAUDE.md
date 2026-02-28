@@ -1,7 +1,31 @@
-# Email & Calendar Integration for Clawdbot
+# automation/email_calendar — Contract (STRICT)
 
-**Location:** `/home/clayton/IDE/clawdbot/projects/automation/email_calendar/`
-**Provider:** Fastmail (JMAP API)
+## Inheritance
+This file inherits the IDE constitution at `~/IDE/CLAUDE.md` (STRICT MODE).
+If any instruction here conflicts with the constitution, the constitution wins.
+
+## Scope
+Email + calendar automation integration for OpenClaw, under `projects/automation/email_calendar/`.
+
+## Allowed Writes
+- Inside this project directory only
+- `data/` for IDE-scoped generated outputs if needed
+- Project-local state files (e.g., `.email-monitor-state.json`) must stay inside this directory.
+
+## Execution Interface (Wrapper-first)
+- Prefer IDE wrappers when available:
+  - `bin/email-monitor` for monitor operations
+  - `bin/doctor` after structural changes
+- Do NOT assume absolute IDE paths (`/home/...`).
+- If a wrapper is missing for an operation, propose adding one (plan-only).
+
+---
+
+# Email & Calendar Integration for OpenClaw
+
+**Location:** `projects/automation/email_calendar/` (authoritative relative path; do not assume `/home/...`)  
+**Provider:** Fastmail (JMAP API + CalDAV)  
+**Forked from:** [alexdiazdecerio/fastmail-mcp-server](https://github.com/alexdiazdecerio/fastmail-mcp-server)
 
 ## Overview
 
@@ -9,18 +33,62 @@ Fastmail integration for email and calendar automation through Jarvis. Handles b
 
 ## Status
 
-**Current Phase:** Design Complete → Ready for Implementation
+**Current Phase:** Phase 4 Complete - All Phases Done
+
+### Phase 1 Progress (January 27, 2026)
+- [x] Added `to` filter to `list_emails` tool
+- [x] Added `create_draft` tool and handler
+- [x] Added `list_drafts` tool and handler
+- [x] Added `send_draft` tool and handler
+- [x] Added `delete_draft` tool and handler
+- [x] Tested all tools via CLI (working)
+- [x] Customer classification prompts:
+  - `classify_email` - Classify email using Novique.ai rules
+  - `customer_inbox_summary` - Summary of customer emails only
+  - `draft_customer_reply` - Draft professional reply to customer
+
+### Phase 2 Progress (January 27, 2026)
+- [x] Created CalDAV client (`caldav-client.ts`) using tsdav
+- [x] Added `list_calendars` tool
+- [x] Added `list_events` tool
+- [x] Added `get_event` tool
+- [x] Added `create_event` tool
+- [x] Added `update_event` tool
+- [x] Added `delete_event` tool
+- [x] Added `todays_schedule` tool
+- [x] Added `upcoming_events` tool
+- [x] Added calendar prompts:
+  - `daily_briefing` - Morning briefing with schedule and emails
+  - `schedule_meeting` - Natural language meeting scheduling
+  - `reschedule_event` - Natural language event rescheduling
+- [x] Tested all calendar tools (working)
+
+### Phase 3 Progress (January 27, 2026)
+- [x] Added `detect_scheduling_email` tool - Analyzes emails for scheduling keywords
+- [x] Added `email_to_calendar` tool - Extracts scheduling info for event creation
+- [x] Added `check_availability` tool - Checks calendar for conflicts at proposed times
+- [x] Added email-calendar prompts:
+  - `process_scheduling_email` - Full workflow: detect, extract, create event
+  - `scan_for_scheduling_emails` - Scan inbox for emails needing calendar entries
+- [x] Tested all tools (working)
+
+### Phase 4 Progress (January 27, 2026)
+- [x] Created `fastmail-cli` command-line tool for OpenClaw
+- [x] CLI provides direct access to all email/calendar functions
+- [x] Added documentation to `projects/jarvis/TOOLS.md` (or migrate doc reference to a canonical path within IDE)
+- [x] Globally linked via npm (`fastmail-cli` available system-wide)
+- [x] Tested CLI commands (working)
 
 ## Approach
 
-**Fork and extend [fastmail-mcp-server](https://github.com/alexdiazdecerio/fastmail-mcp-server)**
+**Fork and extend fastmail-mcp-server**
 
-The existing MCP server provides solid email functionality. We will:
-1. Add recipient (`to`) filtering for customer detection
-2. Add draft management (create/list/send drafts)
-3. Add CalDAV calendar integration via `tsdav`
-4. Add customer classification logic
-5. Integrate with Clawdbot notifications
+The existing MCP server provides solid email functionality. We are adding:
+1. Recipient (`to`) filtering for customer detection
+2. Draft management (create/list/send drafts)
+3. CalDAV calendar integration via `tsdav`
+4. Customer classification logic
+5. OpenClaw notifications integration
 
 ## Requirements
 
@@ -52,82 +120,36 @@ The existing MCP server provides solid email functionality. We will:
 
 6. **Natural Language Calendar Management**
    - Modify calendar via natural language commands
-   - Examples:
-     - "Move today's 9am call to tomorrow at 10am"
-     - "Cancel my 2pm meeting"
-     - "Schedule a call with John for Friday at 3pm"
 
 ## Technical Notes
+...
 
-### Fastmail APIs
-- **Email:** JMAP protocol (modern replacement for IMAP)
-  - Endpoint: `https://api.fastmail.com/jmap/session`
-  - Documentation: https://www.fastmail.com/dev/
-- **Calendar:** CalDAV protocol (JMAP calendars not yet available)
-  - Endpoint: `https://caldav.fastmail.com/dav/principals/user/{email}/`
-  - JMAP for Calendars spec still in draft (expires May 2026)
+## Email Monitor Service (Wrapper-first)
 
-Note: Two different APIs required until JMAP calendar spec is finalized.
+Automatic email notifications via Telegram every 15 minutes.
 
-### Customer Identification
+Primary interface:
 
-```
-Email to sales@novique.ai    → ALWAYS customer (no analysis needed)
-Email to support@novique.ai  → ALWAYS customer (no analysis needed)
-Email to other @novique.ai   → Content analysis required
+```bash
+cd ~/IDE
+bin/email-monitor status
+bin/email-monitor run
 ```
 
-**Content Analysis (for other @novique.ai addresses):**
-- Jarvis analyzes email content to classify as:
-  - Customer or prospective customer inquiry → treat as customer
-  - Service provider / vendor / SaaS notification → non-customer
-
-Non-customer examples:
-- SaaS notifications (billing, alerts, newsletters)
-- Vendor communications
-- Infrastructure/service emails
-
-## Goals
-
-- [x] Research Fastmail JMAP API
-- [x] Research existing clawdbot email integrations
-- [x] Define customer identification logic
-- [x] Design architecture
-- [ ] Fork fastmail-mcp-server
-- [ ] Add recipient filtering
-- [ ] Add draft management tools
-- [ ] Add CalDAV calendar integration
-- [ ] Add calendar tools
-- [ ] Add customer classification
-- [ ] Integrate with Clawdbot
-
-## Implementation Phases
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Email enhancements (recipient filter, drafts) | Planned |
-| 2 | Calendar integration (CalDAV/tsdav) | Planned |
-| 3 | Email-calendar integration | Planned |
-| 4 | Clawdbot integration | Planned |
-
-## Key Resources
-
-- **Base repo:** `research/fastmail-mcp-server/` (cloned)
-- **Design doc:** `.planning/plans/email_calendar_design.md`
-- **Research:** `research/email_calendar_research.md`
-
-## Related Files
-
-- Clawdbot config: `~/.clawdbot/clawdbot.json`
-- Main clawdbot source: `~/.npm-global/lib/node_modules/clawdbot/`
-
-## Authentication Required
-
-| Service | Auth Type | Config Key |
-|---------|-----------|------------|
-| JMAP (Email) | API Token | `FASTMAIL_API_TOKEN` |
-| CalDAV (Calendar) | App Password | `FASTMAIL_APP_PASSWORD` |
+Project-local state file (keep here, not elsewhere):
+- `.email-monitor-state.json`
 
 ---
 
-**Last Updated:** January 27, 2026
+## BREAK-GLASS (Manual Only)
+
+⚠ These commands bypass the IDE wrapper interface.
+Use only when wrappers are broken or when diagnosing wrapper behavior.
+
+```bash
+systemctl --user status email-monitor.timer
+systemctl --user list-timers email-monitor.timer
+systemctl --user start email-monitor.service
+systemctl --user disable --now email-monitor.timer
+systemctl --user enable --now email-monitor.timer
+```
