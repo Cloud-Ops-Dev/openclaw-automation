@@ -4,6 +4,35 @@
 This file inherits the IDE constitution at `~/IDE/CLAUDE.md` (STRICT MODE).
 If any instruction here conflicts with the constitution, the constitution wins.
 
+The global file defines:
+- Structural rules
+- Execution workflow
+- Validation requirements
+- DEFECT mode (AUTONOMOUS_DEEP_DEBUG)
+
+These rules are authoritative and MUST NOT be overridden.
+
+This file may define:
+- Project-specific logic
+- Service behavior
+- Local development workflows
+
+---
+
+## DEFECT MODE AWARENESS
+
+This repository participates in global DEFECT mode.
+
+If the prompt contains "defect":
+
+- Switch to AUTONOMOUS_DEEP_DEBUG
+- Perform full system analysis before coding
+- Execute ≥5 test scenarios
+- Do NOT deploy without validation
+- Do NOT stop at first fix
+
+---
+
 ## Scope
 Automation project under `projects/`.
 
